@@ -18,19 +18,9 @@ namespace SomeParseSolution
         public readonly int Weight;
         public readonly bool OneArgFunc;
         public MathOperation(TSymbol symbol, Func<TArg, TArg, TArg> func, int weigth = 1)
-        {
-            Operation = func;
-            Weight = weigth;
-            Symbol = symbol;
-            OneArgFunc = false;
-        }
+            : this(symbol, func, false, weigth) { }
         public MathOperation(TSymbol symbol, Func<TArg, TArg> func, int weigth = 1)
-        {
-            Operation = func;
-            Weight = weigth;
-            Symbol = symbol;
-            OneArgFunc = true;
-        }
+            : this(symbol, func, true, weigth) { }
         public MathOperation(TSymbol symbol, Delegate func, bool isOneArgFunc, int weigth = 1)
         {
             Operation = func;

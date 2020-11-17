@@ -28,10 +28,10 @@ namespace SomeParseSolution
             { ")",-6}
         };
         public RealNumbersExpressionParser() : base(new RealNumbersExpressionCalculator(), defaultDividers) { }
-        public override double Parse(string source, Dictionary<string, double> valueDict)
+        public override ParseExpressionResult<string,double> Parse(string source)
         {
             source = source[0] + source.Substring(1).Replace("-", "+-");
-            return base.Parse(source, valueDict);
+            return base.Parse(source);
         }
     }
 }

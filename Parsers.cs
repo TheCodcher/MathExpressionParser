@@ -19,7 +19,7 @@ namespace SomeParseSolution
             WordDict = new Dictionary<string, MathSymbolProperty>(temp);
             WordMass = WordDict.Select(i => i.Key).ToArray();
         }
-        public virtual TArg Parse(string source, Dictionary<string, TArg> valueDict)
+        public virtual ParseExpressionResult<string, TArg> Parse(string source)
         {
             foreach (var i in WordMass)
             {
@@ -29,11 +29,12 @@ namespace SomeParseSolution
             int weightK = 0;
             Queue<object> values = new Queue<object>();
             List<KeyValuePair<int, int>> WeightIndx = new List<KeyValuePair<int, int>>();
+            var result = new ParseExpressionResult<string, TArg>();
             foreach(var i in mass)
             {
                 if (!WordDict.ContainsKey(i))
                 {
-                    values.Enqueue(valueDict[i]);
+                    values.Enqueue(new ExpressionNode<string, TArg>(i, result.GetDictionaryValue));
                 }
                 else
                 {
@@ -72,20 +73,21 @@ namespace SomeParseSolution
                     generalreplacer.SetExpansionScope(replacers.Find(i => i.Incude(opIndx - 1)).NowBottom, replacers.Find(i => i.Incude(opIndx + 1)).NowTop);
                     nowRepl = generalreplacer;
                 }
-                TArg temp;
+                ExpressionNode<string, TArg> temp;
                 if (now.OneArgFunc)
                 {
-                    temp = Calc.Calculate(now.Symbol, (TArg)resultMass[opIndx + 1]);
+                    temp = new ExpressionNode<string, TArg>((ExpressionNode<string, TArg>)resultMass[opIndx + 1], a => Calc.Calculate(now.Symbol, a));
                     nowRepl.SetExpansionScope(opIndx, opIndx + 1);
                 }
                 else
                 {
-                    temp = Calc.Calculate(now.Symbol, (TArg)resultMass[opIndx - 1], (TArg)resultMass[opIndx + 1]);
+                    temp = new ExpressionNode<string, TArg>((ExpressionNode<string, TArg>)resultMass[opIndx - 1], (ExpressionNode<string, TArg>)resultMass[opIndx + 1], (a, b) => Calc.Calculate(now.Symbol, a, b));
                     nowRepl.SetExpansionScope(opIndx - 1, opIndx + 1);
                 }
                 nowRepl.Replace(resultMass, temp);
             }
-            return (TArg)generalreplacer.GetResult(resultMass);
+            result.Set((ExpressionNode<string, TArg>)generalreplacer.GetResult(resultMass));
+            return result;
         }
         class MassReplacer
         {
@@ -142,9 +144,9 @@ namespace SomeParseSolution
                 return mathOperations;
             }
         }
-        public virtual TArg Parse(string source, Dictionary<T, TArg> valueDict)
+        public virtual ParseExpressionResult<string, TArg> Parse(string source, Dictionary<T, TArg> valueDict)
         {
-            return Parse(source, new Dictionary<string, TArg>(valueDict.Select(i => new KeyValuePair<string, TArg>(i.Key.ToString(), i.Value))));
+            return Parse(source/*,new Dictionary<string, TArg>(valueDict.Select(i => new KeyValuePair<string, TArg>(i.Key.ToString(), i.Value)))*/);
         }
     }
 }
